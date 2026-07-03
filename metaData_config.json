@@ -1,0 +1,120 @@
+{
+    "orders": {
+        "source_type": "file_drop",
+        "file_format": "csv",
+        "landing_path": "landing/orders/",
+        "bronze_path": "bronze/orders",
+        "silver_path": "silver/fact_orders",
+         "gold_path" : "gold/fact_orders",
+        "primary_key": "OrderID",
+        "scd_type": "append_only",
+        "foreign_keys": [
+            {"column": "CustomerID", "parent_table": "customers", "parent_key": "CustomerID"},
+            {"column": "ProductID", "parent_table": "products", "parent_key": "ProductID"}
+        ],
+        "columns": [
+            {"name": "OrderID", "type": "bigint"},
+            {"name": "CustomerID", "type": "int"},
+            {"name": "ProductID", "type": "int"},
+            {"name": "OrderDate", "type": "date", "date_formats": ["yyyy-MM-dd", "dd-MMM-yyyy", "yyyy/MM/dd", "dd/MM/yyyy"]},
+            {"name": "Quantity", "type": "int"},
+            {"name": "UnitPrice", "type": "decimal(10,2)"},
+            {"name": "StoreCode", "type": "string"}
+        ],
+        "validations": [
+            {"column": "OrderID",    "rule": "not_null"},
+            {"column": "CustomerID", "rule": "not_null"},
+            {"column": "ProductID",  "rule": "not_null"},
+            {"column": "OrderDate",  "rule": "not_null"},
+            {"column": "OrderDate",  "rule": "not_future"},
+            {"column": "Quantity",   "rule": "positive"},
+            {"column": "UnitPrice",  "rule": "positive"}
+        ]
+    },
+    "products": {
+        "source_type": "file_drop",
+        "file_format": "csv",
+        "landing_path": "landing/products/",
+        "bronze_path": "bronze/products",
+        "silver_path": "silver/dim_products",
+        "gold_path" : "gold/dim_products",
+        "file_format_silver": "csv_delta",
+        "primary_key": "ProductID",
+        "scd_type": "type1",
+        "foreign_keys": [],
+        "columns": [
+            {"name": "ProductID", "type": "int"},
+            {"name": "ProductName", "type": "string"},
+            {"name": "Category", "type": "string"},
+            {"name": "SubCategory", "type": "string"},
+            {"name": "Brand", "type": "string"},
+            {"name": "CostPrice", "type": "decimal(10,2)"}
+        ],
+        "validations": [
+            {"column": "ProductID",   "rule": "not_null"},
+            {"column": "ProductName", "rule": "not_empty"},
+            {"column": "CostPrice",   "rule": "positive"}
+        ]
+    },
+    "customers": {
+        "source_type": "file_drop",
+        "file_format": "csv",
+        "landing_path": "landing/customers/",
+        "bronze_path": "bronze/customers",
+        "silver_path": "silver/dim_customers",
+         "gold_path" : "gold/dim_customers",
+        "primary_key": "CustomerID",
+        "scd_type": "type2",
+        "foreign_keys": [],
+        "columns": [
+            {"name": "CustomerID", "type": "int"},
+            {"name": "FirstName", "type": "string"},
+            {"name": "LastName", "type": "string"},
+            {"name": "Email", "type": "string"},
+            {"name": "Phone", "type": "string"},
+            {"name": "City", "type": "string"},
+            {"name": "State", "type": "string"},
+            {
+                "name": "LastUpdated",
+                "type": "timestamp",
+                "date_formats": [
+                    "yyyy-MM-dd",
+                    "dd-MMM-yyyy",
+                    "yyyy/MM/dd",
+                    "dd/MM/yyyy"
+                ]
+            }
+        ],
+        "validations": [
+            {"column": "CustomerID", "rule": "not_null"},
+            {"column": "FirstName",  "rule": "not_empty"},
+            {"column": "LastName",   "rule": "not_empty"},
+            {"column": "Email",      "rule": "not_null"},
+            {"column": "Email",      "rule": "valid_email"},
+            {"column": "Phone", "rule": "valid_phone"}
+        ]
+    },
+    "exchange_rates": {
+        "source_type": "api_drop",
+        "file_format": "json",
+        "landing_path": "landing/exchange_rates/",
+        "bronze_path": "bronze/exchange_rates",
+        "silver_path": "silver/dim_exchange_rates",
+        "primary_key": "TargetCurrency",
+        "scd_type": "append_only",
+        "foreign_keys": [],
+        "columns": [
+            {"name": "BaseCurrency", "type": "string"},
+            {"name": "TargetCurrency", "type": "string"}, 
+            {"name": "ExchangeRate", "type": "decimal(18,6)"},
+            {"name": "RateDate", "type": "date"}
+        ],
+        "validations": [
+            {"column": "TargetCurrency", "rule": "not_null"},
+            {"column": "BaseCurrency",   "rule": "not_null"},
+            {"column": "ExchangeRate",   "rule": "positive"},
+            {"column": "RateDate",       "rule": "not_null"},
+            {"column": "RateDate",       "rule": "not_future"}
+        ]
+    }
+}
